@@ -256,14 +256,14 @@ defmodule EvercamMediaWeb.CameraShareController do
   end
   defp create_camera_share(_mode, _, _, _, _, _, _), do: :noop
 
-  def create_camera_share_request(true, caller, camera, camera_share_request, extra, next_datetime, ip, conn) do
+  defp create_camera_share_request(true, caller, camera, camera_share_request, extra, next_datetime, ip, conn) do
     spawn(fn ->
       send_email_notification(caller, camera, camera_share_request.email, camera_share_request.message, camera_share_request.key)
       Util.log_activity(caller, camera, "shared", Map.merge(extra, %{with: camera_share_request.email}), next_datetime)
       Intercom.intercom_activity(Application.get_env(:evercam_media, :create_intercom_user), get_user_model(camera_share_request.email), get_user_agent(conn), ip, "Shared-Non-Registered")
     end)
   end
-  def create_camera_share_request(_mode, _, _, _, _, _, _, _), do: :noop
+  defp create_camera_share_request(_mode, _, _, _, _, _, _, _), do: :noop
 
   def broadcast_share_to_users(camera) do
     User.with_access_to(camera)
@@ -398,7 +398,7 @@ defmodule EvercamMediaWeb.CameraShareController do
     end
   end
 
-  defp send_email_notification(user, camera, to_email, message) do
+  def send_email_notification(user, camera, to_email, message) do
     try do
       Task.start(fn ->
         EvercamMedia.UserMailer.camera_shared_notification(user, camera, to_email, message)
@@ -409,7 +409,7 @@ defmodule EvercamMediaWeb.CameraShareController do
     end
   end
 
-  defp send_email_notification(user, camera, to_email, message, share_request_key) do
+  def send_email_notification(user, camera, to_email, message, share_request_key) do
     try do
       Task.start(fn ->
         EvercamMedia.UserMailer.camera_share_request_notification(user, camera, to_email, message, share_request_key)

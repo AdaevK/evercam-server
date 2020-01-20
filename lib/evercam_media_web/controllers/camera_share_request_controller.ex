@@ -19,7 +19,7 @@ defmodule EvercamMediaWeb.CameraShareRequestController do
     response 404, "Camera does not found or Share request not found"
   end
 
-  def resend(conn, %{"id" => exid, "email" => email} = params) do
+  def resend(conn, %{"id" => exid, "email" => email}) do
     caller = conn.assigns[:current_user]
     camera = Camera.get_full(exid)
 
@@ -27,14 +27,8 @@ defmodule EvercamMediaWeb.CameraShareRequestController do
          :ok <- caller_has_rights(conn, caller, camera),
          {:ok, camera_share_request} <- share_request_exists(conn, email, camera)
     do
-      requester_ip = user_request_ip(conn, params["requester_ip"])
-      extra =
-        %{ agent: get_user_agent(conn, params["agent"]) }
-        |> Map.merge(get_requester_Country(requester_ip, params["u_country"], params["u_country_code"]))
-
-      Application.get_env(:evercam_media, :run_spawn)
-      |> EvercamMediaWeb.CameraShareController.create_camera_share_request(caller, camera, camera_share_request, extra, Calendar.DateTime.now_utc, requester_ip, conn)
-      render(conn, "show.json", %{camera_share_request: camera_share_request})
+      EvercamMediaWeb.CameraShareController.send_email_notification(caller, camera, camera_share_request.email, camera_share_request.message, camera_share_request.key)
+      json(conn, %{message: "Camera Share Request email has been sent."})
     else
       _ ->
         render_error(conn, 404, "Camera Share Request not found.")
