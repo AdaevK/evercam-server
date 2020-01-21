@@ -39,7 +39,7 @@ defmodule Permission.Camera do
 
   defp has_right?(right, %User{} = user, camera) do
     Enum.any?(camera.access_rights, fn(ar) ->
-      Util.deep_get(ar, [:access_token, :user_id], 0) == user.id &&
+      Util.deep_get(ar, [:user_id], 0) == user.id &&
       (ar.right == right || ar.right == "grant~#{right}") &&
       ar.status == 1
     end)
