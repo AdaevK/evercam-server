@@ -2,6 +2,38 @@ defmodule EvercamMediaWeb.CameraShareRequestController do
   use EvercamMediaWeb, :controller
   use PhoenixSwagger
   alias EvercamMedia.Intercom
+  alias EvercamMedia.Util
+
+  swagger_path :resend do
+    patch "/cameras/{id}/shares/requests"
+    summary "Resend the pending share request of given email and camera."
+    parameters do
+      id :path, :string, "Unique identifier for camera.", required: true
+      email :query, :string, ""
+      api_id :query, :string, "The Evercam API id for the requester."
+      api_key :query, :string, "The Evercam API key for the requester."
+    end
+    tag "Shares"
+    response 200, "Success"
+    response 401, "Invalid API keys or Unauthorized"
+    response 404, "Camera does not found or Share request not found"
+  end
+
+  def resend(conn, %{"id" => exid, "email" => email}) do
+    caller = conn.assigns[:current_user]
+    camera = Camera.get_full(exid)
+
+    with :ok <- camera_exists(conn, exid, camera),
+         :ok <- caller_has_rights(conn, caller, camera),
+         {:ok, camera_share_request} <- share_request_exists(conn, email, camera)
+    do
+      EvercamMediaWeb.CameraShareController.send_email_notification(caller, camera, camera_share_request.email, camera_share_request.message, camera_share_request.key)
+      json(conn, %{message: "Camera Share Request email has been sent."})
+    else
+      _ ->
+        render_error(conn, 404, "Camera Share Request not found.")
+    end
+  end
 
   swagger_path :show do
     get "/cameras/{id}/shares/requests"

@@ -398,7 +398,7 @@ defmodule EvercamMediaWeb.CameraShareController do
     end
   end
 
-  defp send_email_notification(user, camera, to_email, message) do
+  def send_email_notification(user, camera, to_email, message) do
     try do
       Task.start(fn ->
         EvercamMedia.UserMailer.camera_shared_notification(user, camera, to_email, message)
@@ -409,7 +409,7 @@ defmodule EvercamMediaWeb.CameraShareController do
     end
   end
 
-  defp send_email_notification(user, camera, to_email, message, share_request_key) do
+  def send_email_notification(user, camera, to_email, message, share_request_key) do
     try do
       Task.start(fn ->
         EvercamMedia.UserMailer.camera_share_request_notification(user, camera, to_email, message, share_request_key)
