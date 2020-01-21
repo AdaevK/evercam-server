@@ -190,6 +190,7 @@ end
       delete "/cameras/:id/shares", CameraShareController, :delete_share
       get "/cameras/:id/shares/requests", CameraShareRequestController, :show
       post "/cameras/:id/shares/requests/resend", CameraShareRequestController, :resend
+      options "/cameras/:id/shares/requests/resend", CameraShareRequestController, :nothing
       patch "/cameras/:id/shares/requests", CameraShareRequestController, :update
       delete "/cameras/:id/shares/requests", CameraShareRequestController, :cancel
       options "/cameras/:id/shares/requests", CameraShareRequestController, :nothing
