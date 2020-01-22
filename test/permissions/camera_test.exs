@@ -23,7 +23,7 @@ defmodule Permission.CameraTest do
     owner = Repo.insert!(%User{firstname: "Jane", lastname: "Doe", username: "janedoe", email: "jane@doe.net", password: "password123", country_id: country.id})
     token = Repo.insert!(%AccessToken{user_id: user.id, is_revoked: false, request: "whatever"})
     camera = Repo.insert!(%Camera{owner_id: owner.id, name: "camera 1", exid: "123", is_public: false, config: ""})
-    _access_right = Repo.insert!(%AccessRight{token_id: token.id, right: "view", camera_id: camera.id, status: 1, scope: "cameras"})
+    _access_right = Repo.insert!(%AccessRight{user_id: user.id, right: "view", camera_id: camera.id, status: 1, scope: "cameras"})
     camera = Repo.preload(camera, [:access_rights, [access_rights: :access_token]])
 
     assert Permission.Camera.can_view?(user, camera)
@@ -36,7 +36,7 @@ defmodule Permission.CameraTest do
     owner = Repo.insert!(%User{firstname: "Jane", lastname: "Doe", username: "janedoe", email: "jane@doe.net", password: "password123", country_id: country.id})
     token = Repo.insert!(%AccessToken{user_id: user.id, is_revoked: false, request: "whatever"})
     camera = Repo.insert!(%Camera{owner_id: owner.id, name: "camera 1", exid: "123", is_public: false, config: ""})
-    _access_right = Repo.insert!(%AccessRight{token_id: token.id, right: "edit", camera_id: camera.id, status: 1, scope: "cameras"})
+    _access_right = Repo.insert!(%AccessRight{user_id: user.id, right: "edit", camera_id: camera.id, status: 1, scope: "cameras"})
     camera = Repo.preload(camera, [:access_rights, [access_rights: :access_token]])
 
     assert Permission.Camera.can_edit?(user, camera)
@@ -48,8 +48,8 @@ defmodule Permission.CameraTest do
     owner = Repo.insert!(%User{firstname: "Jane", lastname: "Doe", username: "janedoe", email: "jane@doe.net", password: "password123", country_id: country.id})
     token = Repo.insert!(%AccessToken{user_id: user.id, is_revoked: false, request: "whatever"})
     camera = Repo.insert!(%Camera{owner_id: owner.id, name: "camera 1", exid: "123", is_public: false, config: ""})
-    _grant_right = Repo.insert!(%AccessRight{token_id: token.id, right: "grant", camera_id: camera.id, status: 1, scope: "cameras"})
-    _view_right = Repo.insert!(%AccessRight{token_id: token.id, right: "list", camera_id: camera.id, status: 1, scope: "cameras"})
+    _grant_right = Repo.insert!(%AccessRight{user_id: user.id, right: "grant", camera_id: camera.id, status: 1, scope: "cameras"})
+    _view_right = Repo.insert!(%AccessRight{user_id: user.id, right: "list", camera_id: camera.id, status: 1, scope: "cameras"})
     camera = Repo.preload(camera, [:access_rights, [access_rights: :access_token]])
 
     assert Permission.Camera.can_list?(user, camera)
