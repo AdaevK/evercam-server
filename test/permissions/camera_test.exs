@@ -6,7 +6,7 @@ defmodule Permission.CameraTest do
     user = Repo.insert!(%User{firstname: "John", lastname: "Doe", username: "johndoe", email: "john@doe.com", password: "password123", country_id: country.id})
     token = Repo.insert!(%AccessToken{user_id: user.id, is_revoked: false, request: "whatever"})
     camera = Repo.insert!(%Camera{owner_id: user.id, name: "camera 1", exid: "123", is_public: false, config: ""})
-    _access_right = Repo.insert!(%AccessRight{token_id: token.id, right: "edit", camera_id: camera.id, status: 1, scope: "cameras"})
+    _access_right = Repo.insert!(%AccessRight{user_id: user.id, right: "edit", camera_id: camera.id, status: 1, scope: "cameras"})
     camera = Repo.preload(camera, [:access_rights, [access_rights: :access_token]])
 
     assert Permission.Camera.can_edit?(user, camera)
