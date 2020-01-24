@@ -22,6 +22,7 @@ defmodule EvercamMedia do
       Supervisor.child_spec({ConCache, [ttl_check_interval: :timer.hours(2), global_ttl: :timer.hours(6), name: :camera_response_times]}, id: :camera_response_times),
       Supervisor.child_spec({ConCache, [ttl_check_interval: :timer.seconds(1), global_ttl: :timer.hours(1), name: :do_camera_request]}, id: :do_camera_request),
       Supervisor.child_spec({ConCache, [ttl_check_interval: :timer.hours(2), global_ttl: :timer.hours(24), name: :camera_recording_days]}, id: :camera_recording_days),
+      Supervisor.child_spec({ConCache, [ttl_check_interval: :timer.hours(1), global_ttl: :timer.hours(1), name: :zoho_auth_token]}, id: :zoho_auth_token),
       worker(EvercamMedia.Scheduler, []),
       worker(EvercamMedia.Janitor, []),
       worker(EvercamMedia.StorageJson, []),
