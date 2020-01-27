@@ -382,4 +382,6 @@ defmodule EvercamMedia.Util do
   end
   def is_secure_url(url, _), do: url
 
+  def date_wrt_version("v2", date, camera), do: datetime_to_iso8601(date, Camera.get_timezone(camera))
+  def date_wrt_version("v1", date, _camera), do: ecto_datetime_to_unix(date)
 end
