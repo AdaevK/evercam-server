@@ -77,7 +77,7 @@ defmodule EvercamMedia.Zoho do
         recall_function = fn -> update_camera(cameras, id) end
         Logger.debug "Invalid Token"
         refresh_token(recall_function)
-      _ -> {:error}
+      error -> {:error, error}
     end
   end
 
