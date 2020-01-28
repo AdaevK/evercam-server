@@ -19,18 +19,15 @@ defmodule EvercamMedia.SyncEvercamToZoho do
     |> Camera.for(false)
     |> Enum.chunk_every(99)
     |> Enum.each(fn(cameras) ->
-      Enum.count(cameras) |> IO.inspect
       Enum.reduce(cameras, [], fn camera, sync_missing_cameras = _acc ->
         case Zoho.get_camera(camera.exid) do
           {:nodata, _message} -> [camera | sync_missing_cameras]
           _ -> sync_missing_cameras
         end
-        # :timer.sleep(2000)
+        :timer.sleep(1000)
       end)
-      |> Enum.count
+      |> Zoho.insert_camera
       |> IO.inspect
-      # |> Zoho.insert_camera
-      # |> IO.inspect
     end)
 
     Logger.info "Camera(s) sync successfully."
