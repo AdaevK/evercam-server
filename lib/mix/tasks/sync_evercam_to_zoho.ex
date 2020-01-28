@@ -33,9 +33,9 @@ defmodule EvercamMedia.SyncEvercamToZoho do
       |> Enum.count
       |> IO.inspect
       Logger.info "Start cameras insertions."
-      # sync_cameras
-      # |> Zoho.insert_camera
-      # |> IO.inspect
+      sync_cameras
+      |> Zoho.insert_camera
+      |> IO.inspect
     end)
 
     Logger.info "Camera(s) sync successfully."

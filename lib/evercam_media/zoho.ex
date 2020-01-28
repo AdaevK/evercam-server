@@ -1,7 +1,7 @@
 defmodule EvercamMedia.Zoho do
   require Logger
 
-  @zoho_url System.get_env["ZOHO_URL"] || "https://www.zohoapis.com/crm/v2/"
+  @zoho_url System.get_env["ZOHO_URL"]
   @zoho_refresh_token System.get_env["ZOHO_REFRESH_TOKEN"]
   @zoho_client_id System.get_env["ZOHO_CLIENT_ID"]
   @zoho_client_secret System.get_env["ZOHO_CLIENT_SECRET"]
