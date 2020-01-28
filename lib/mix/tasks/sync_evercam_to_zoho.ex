@@ -8,7 +8,6 @@ defmodule EvercamMedia.SyncEvercamToZoho do
   require Logger
 
   @zoho_url System.get_env["ZOHO_URL"]
-  @zoho_auth_token System.get_env["ZOHO_AUTH_TOKEN"]
 
   def sync_cameras(email_or_username) do
     {:ok, _} = Application.ensure_all_started(:evercam_media)
@@ -20,7 +19,21 @@ defmodule EvercamMedia.SyncEvercamToZoho do
     |> Camera.for(false)
     |> Enum.chunk_every(99)
     |> Enum.each(fn(cameras) ->
-      cameras
+      cameras |> Enum.count |> IO.inspect
+      sync_cameras =
+        Enum.reduce(cameras, [], fn camera, sync_missing_cameras = _acc ->
+          case Zoho.get_camera(camera.exid) do
+            {:nodata, _message} -> [camera | sync_missing_cameras]
+            _ -> sync_missing_cameras
+          end
+          # :timer.sleep(1000)
+        end)
+
+      sync_cameras
+      |> Enum.count
+      |> IO.inspect
+      Logger.info "Start cameras insertions."
+      sync_cameras
       |> Zoho.insert_camera
       |> IO.inspect
     end)
@@ -62,7 +75,7 @@ defmodule EvercamMedia.SyncEvercamToZoho do
 
   def update_account_info(true, page) do
     url = "#{@zoho_url}Accounts?per_page=99&page=#{page}"
-    headers = ["Authorization": "#{@zoho_auth_token}"]
+    headers = ["Authorization": "Bearer #{ConCache.get(:zoho_auth_token, :oauth_token)}"]
 
     case HTTPoison.get(url, headers) do
       {:ok, %HTTPoison.Response{body: body, status_code: 200}} ->
@@ -91,7 +104,7 @@ defmodule EvercamMedia.SyncEvercamToZoho do
 
   def do_update_account_info(xml_data) do
     url = "#{@zoho_url}Accounts"
-    headers = ["Authorization": "#{@zoho_auth_token}", "Content-Type": "application/x-www-form-urlencoded"]
+    headers = ["Authorization": "Bearer #{ConCache.get(:zoho_auth_token, :oauth_token)}", "Content-Type": "application/x-www-form-urlencoded"]
 
     raw_xml = %{ "data" => xml_data }
     case HTTPoison.put(url, Jason.encode!(raw_xml), headers) do
@@ -102,7 +115,7 @@ defmodule EvercamMedia.SyncEvercamToZoho do
 
   def update_records(true, page) do
     url = "#{@zoho_url}Share_Requests?per_page=99&page=#{page}"
-    headers = ["Authorization": "#{@zoho_auth_token}"]
+    headers = ["Authorization": "Bearer #{ConCache.get(:zoho_auth_token, :oauth_token)}"]
 
     case HTTPoison.get(url, headers) do
       {:ok, %HTTPoison.Response{body: body, status_code: 200}} ->
@@ -126,7 +139,7 @@ defmodule EvercamMedia.SyncEvercamToZoho do
     case Zoho.get_account(domain) do
       {:ok, account} ->
         Logger.info "Update Share_Requests email: #{record["Email"]}, id: #{record["id"]}, Account Name: #{account["Account_Name"]}"
-        headers = ["Authorization": "#{@zoho_auth_token}", "Content-Type": "application/x-www-form-urlencoded"]
+        headers = ["Authorization": "Bearer #{ConCache.get(:zoho_auth_token, :oauth_token)}", "Content-Type": "application/x-www-form-urlencoded"]
         raw_xml = %{
           "data" => [%{
             "id" => record["id"],
@@ -143,7 +156,7 @@ defmodule EvercamMedia.SyncEvercamToZoho do
 
   def do_update_records(records) do
     url = "#{@zoho_url}Share_Requests"
-    headers = ["Authorization": "#{@zoho_auth_token}", "Content-Type": "application/x-www-form-urlencoded"]
+    headers = ["Authorization": "Bearer #{ConCache.get(:zoho_auth_token, :oauth_token)}", "Content-Type": "application/x-www-form-urlencoded"]
 
     xml_data =
       records
@@ -181,7 +194,7 @@ defmodule EvercamMedia.SyncEvercamToZoho do
     account_name = String.replace(account_name, " ", "%20")
     url = "#{@zoho_url}Contacts/search?criteria=(Account_Name:equals:#{account_name})&page=#{page}"
     Logger.info url
-    headers = ["Authorization": "#{@zoho_auth_token}"]
+    headers = ["Authorization": "Bearer #{ConCache.get(:zoho_auth_token, :oauth_token)}"]
 
     case HTTPoison.get(url, headers) do
       {:ok, %HTTPoison.Response{body: body, status_code: 200}} ->
@@ -212,7 +225,7 @@ defmodule EvercamMedia.SyncEvercamToZoho do
   def fix_empty_account_contacts() do
     url = "#{@zoho_url}Contacts?sort_by=Account_Name&sort_order=asc"
     Logger.info url
-    headers = ["Authorization": "#{@zoho_auth_token}"]
+    headers = ["Authorization": "Bearer #{ConCache.get(:zoho_auth_token, :oauth_token)}"]
 
     case HTTPoison.get(url, headers) do
       {:ok, %HTTPoison.Response{body: body, status_code: 200}} ->
