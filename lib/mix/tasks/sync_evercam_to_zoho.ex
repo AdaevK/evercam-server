@@ -19,13 +19,16 @@ defmodule EvercamMedia.SyncEvercamToZoho do
     |> Camera.for(false)
     |> Enum.chunk_every(99)
     |> Enum.each(fn(cameras) ->
-      Enum.reduce(cameras, [], fn camera, sync_missing_cameras = _acc ->
-        case Zoho.get_camera(camera.exid) do
-          {:nodata, _message} -> [camera | sync_missing_cameras]
-          _ -> sync_missing_cameras
-        end
-        :timer.sleep(1000)
-      end)
+      sync_cameras =
+        Enum.reduce(cameras, [], fn camera, sync_missing_cameras = _acc ->
+          case Zoho.get_camera(camera.exid) do
+            {:nodata, _message} -> [camera | sync_missing_cameras]
+            _ -> sync_missing_cameras
+          end
+          :timer.sleep(1000)
+        end)
+      Logger.info "Start cameras insertions. Total cameras: #{Enum.count(sync_cameras)}"
+      sync_cameras
       |> Zoho.insert_camera
       |> IO.inspect
     end)

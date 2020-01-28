@@ -43,6 +43,7 @@ defmodule EvercamMedia.Zoho do
     end
   end
 
+  def insert_camera([]), do: :noop
   def insert_camera(cameras) do
     url = "#{@zoho_url}Cameras"
     headers = ["Authorization": "Bearer #{ConCache.get(:zoho_auth_token, :oauth_token)}", "Content-Type": "application/x-www-form-urlencoded"]
