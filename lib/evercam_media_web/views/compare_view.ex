@@ -37,9 +37,6 @@ defmodule EvercamMediaWeb.CompareView do
     }
   end
 
-  defp date_wrt_version("v2", date, camera), do: Util.datetime_to_iso8601(date, Camera.get_timezone(camera))
-  defp date_wrt_version("v1", date, _camera), do: Util.ecto_datetime_to_unix(date)
-
   defp status(0), do: "Processing"
   defp status(1), do: "Completed"
   defp status(2), do: "Failed"
