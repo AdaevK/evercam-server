@@ -72,6 +72,7 @@ defmodule EvercamMedia.SyncEvercamToZoho do
               :timer.sleep(5000)
             _ -> nil
           end
+        _ -> Logger.info("Share request already exists.")
       end
     end)
   end
