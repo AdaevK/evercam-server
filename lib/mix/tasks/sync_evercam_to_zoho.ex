@@ -57,8 +57,9 @@ defmodule EvercamMedia.SyncEvercamToZoho do
           {:nodata, _} ->
             Logger.info "Insert contact '#{share.user.email}' to zoho."
             case Zoho.insert_contact(share.user) do
-              {:ok, c} = Zoho.get_camera(share.camera.exid)
-              {:ok, contact} -> Zoho.associate_camera_contact(contact, c)
+              {:ok, contact} ->
+                {:ok, c} = Zoho.get_camera(share.camera.exid)
+                Zoho.associate_camera_contact(contact, c)
               _ -> Logger.info "Failed to insert contact"
             end
             :timer.sleep(2000)
