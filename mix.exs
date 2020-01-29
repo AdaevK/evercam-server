@@ -85,7 +85,7 @@ defmodule EvercamMedia.Mixfile do
       {:con_cache, "~> 0.14.0", override: true},
       {:cors_plug, "~> 2.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:credo, "~> 1.1.4", only: :dev},
+      {:credo, "~> 1.2.0", only: :dev},
       {:dotenv, "~> 3.0.0", only: [:dev, :test]},
       {:ecto, "~> 3.1.7"},
       {:ecto_sql, "~> 3.1.6"},
