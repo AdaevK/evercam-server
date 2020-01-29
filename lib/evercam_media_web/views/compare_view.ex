@@ -16,9 +16,9 @@ defmodule EvercamMediaWeb.CompareView do
       id: compare.exid,
       camera_id: compare.camera.exid,
       title: compare.name,
-      from_date: date_wrt_version(version, compare.before_date, compare.camera),
-      to_date: date_wrt_version(version, compare.after_date, compare.camera),
-      created_at: date_wrt_version(version, compare.inserted_at, compare.camera),
+      from_date: Util.date_wrt_version(version, compare.before_date, compare.camera),
+      to_date: Util.date_wrt_version(version, compare.after_date, compare.camera),
+      created_at: Util.date_wrt_version(version, compare.inserted_at, compare.camera),
       status: status(compare.status),
       requested_by: Util.deep_get(compare, [:user, :username], ""),
       requester_name: User.get_fullname(compare.user),
@@ -36,9 +36,6 @@ defmodule EvercamMediaWeb.CompareView do
       thumbnail_url: "#{EvercamMediaWeb.Endpoint.static_url}/#{version}/cameras/#{compare.camera.exid}/archives/#{compare.exid}/thumbnail?type=compare"
     }
   end
-
-  defp date_wrt_version("v2", date, camera), do: Util.datetime_to_iso8601(date, Camera.get_timezone(camera))
-  defp date_wrt_version("v1", date, _camera), do: Util.ecto_datetime_to_unix(date)
 
   defp status(0), do: "Processing"
   defp status(1), do: "Completed"

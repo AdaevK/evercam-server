@@ -2,7 +2,7 @@ defmodule EvercamMediaWeb.PublicView do
   use EvercamMediaWeb, :view
   alias EvercamMedia.Util
 
-  def render("index.v1.json", %{cameras: cameras, total_pages: total_pages, count: count}) do
+  def render("index." <> <<version::binary-size(2)>>  <> ".json", %{cameras: cameras, total_pages: total_pages, count: count}) do
     %{
       cameras: Enum.map(cameras, fn(camera) ->
         %{
@@ -13,43 +13,10 @@ defmodule EvercamMediaWeb.PublicView do
           vendor_name: Camera.get_vendor_attr(camera, :name),
           model_id: Camera.get_model_attr(camera, :exid),
           model_name: Camera.get_model_attr(camera, :name),
-          created_at: Util.ecto_datetime_to_unix(camera.created_at),
-          updated_at: Util.ecto_datetime_to_unix(camera.updated_at),
-          last_polled_at: Util.ecto_datetime_to_unix(camera.last_polled_at),
-          last_online_at: Util.ecto_datetime_to_unix(camera.last_online_at),
-          is_online_email_owner_notification: camera.is_online_email_owner_notification,
-          status: camera.status,
-          is_public: camera.is_public,
-          discoverable: camera.discoverable,
-          timezone: Camera.get_timezone(camera),
-          location: Camera.get_location(camera),
-          proxy_url: %{
-            hls: Util.get_hls_url(camera),
-            rtmp: Util.get_rtmp_url(camera),
-          },
-          thumbnail_url: thumbnail_url(camera)
-        }
-      end),
-      pages: total_pages,
-      records: count
-    }
-  end
-
-  def render("index.v2.json", %{cameras: cameras, total_pages: total_pages, count: count}) do
-    %{
-      cameras: Enum.map(cameras, fn(camera) ->
-        %{
-          id: camera.exid,
-          name: camera.name,
-          owner: Util.deep_get(camera, [:owner, :username], ""),
-          vendor_id: Camera.get_vendor_attr(camera, :exid),
-          vendor_name: Camera.get_vendor_attr(camera, :name),
-          model_id: Camera.get_model_attr(camera, :exid),
-          model_name: Camera.get_model_attr(camera, :name),
-          created_at: Util.datetime_to_iso8601(camera.created_at, Camera.get_timezone(camera)),
-          updated_at: Util.datetime_to_iso8601(camera.updated_at, Camera.get_timezone(camera)),
-          last_polled_at: Util.datetime_to_iso8601(camera.last_polled_at, Camera.get_timezone(camera)),
-          last_online_at: Util.datetime_to_iso8601(camera.last_online_at, Camera.get_timezone(camera)),
+          created_at: Util.date_wrt_version(version, camera.created_at, camera),
+          updated_at: Util.date_wrt_version(version, camera.updated_at, camera),
+          last_polled_at: Util.date_wrt_version(version, camera.last_polled_at, camera),
+          last_online_at: Util.date_wrt_version(version, camera.last_online_at, camera),
           is_online_email_owner_notification: camera.is_online_email_owner_notification,
           status: camera.status,
           is_public: camera.is_public,
