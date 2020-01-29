@@ -63,12 +63,15 @@ defmodule EvercamMedia.SyncEvercamToZoho do
     |> elem(1)
     |> CameraShareRequest.get_all_pending_requests
     |> Enum.each(fn(request) ->
-      Logger.info "Camera-exid: #{request.camera.exid}, Email: #{request.email}, Created At: #{request.created_at}"
-      case Zoho.get_camera(request.camera.exid) do
-        {:ok, zoho_camera} ->
-          Zoho.insert_requestee(request, zoho_camera, request.camera.owner.email)
-          :timer.sleep(5000)
-        _ -> nil
+      case Zoho.get_share_request(request.email) do
+        {:nodata, _} ->
+          Logger.info "Camera-exid: #{request.camera.exid}, Email: #{request.email}, Created At: #{request.created_at}"
+          case Zoho.get_camera(request.camera.exid) do
+            {:ok, zoho_camera} ->
+              Zoho.insert_requestee(request, zoho_camera, request.camera.owner.email)
+              :timer.sleep(5000)
+            _ -> nil
+          end
       end
     end)
   end
