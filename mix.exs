@@ -4,7 +4,7 @@ defmodule EvercamMedia.Mixfile do
   def project do
     [app: :evercam_media,
      version: "1.0.#{DateTime.to_unix(DateTime.utc_now())}",
-     elixir: "~> 1.9.1",
+     elixir: "~> 1.10.0",
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,

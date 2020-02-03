@@ -12,21 +12,20 @@ defmodule EvercamMedia.Snapshot.WorkerSupervisor do
   event manager for every created worker.
   """
 
-  use Supervisor
+  use DynamicSupervisor
   require Logger
   alias EvercamMedia.Snapshot.StreamerSupervisor
   alias EvercamMedia.Snapshot.Worker
 
   def start_link() do
-    Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+    DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def init(:ok) do
     if Application.get_env(:evercam_media, :start_camera_workers) do
       Task.start_link(&initiate_workers/0)
     end
-    children = [worker(Worker, [], restart: :permanent)]
-    supervise(children, strategy: :simple_one_for_one, max_restarts: 1_000_000)
+    DynamicSupervisor.init(strategy: :one_for_one, max_restarts: 1_000_000)
   end
 
   @doc """
@@ -38,7 +37,8 @@ defmodule EvercamMedia.Snapshot.WorkerSupervisor do
       {:ok, settings} ->
         Logger.debug "[#{settings.config.camera_exid}] Starting worker"
         spawn fn -> EvercamMedia.Snapshot.Storage.check_camera_last_image(settings.config.camera_exid) end
-        Supervisor.start_child(__MODULE__, [settings])
+        spec = %{id: Worker, start: {Worker, :start_link, [settings]}}
+        DynamicSupervisor.start_child(__MODULE__, spec)
       {:error, _message, url} ->
         Logger.warn "[#{camera.exid}] Skipping camera worker as the host is invalid: #{url}"
     end
@@ -88,7 +88,7 @@ defmodule EvercamMedia.Snapshot.WorkerSupervisor do
   def delete_worker(nil), do: :noop
   def delete_worker(worker_pid) do
     Logger.info "Deleteing camera worker."
-    Supervisor.terminate_child(__MODULE__, worker_pid)
+    DynamicSupervisor.terminate_child(__MODULE__, worker_pid)
   end
 
   @doc """
