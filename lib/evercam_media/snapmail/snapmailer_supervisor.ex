@@ -3,18 +3,17 @@ defmodule EvercamMedia.Snapmail.SnapmailerSupervisor do
   Provides function to manage snapmail workers
   """
 
-  use Supervisor
+  use DynamicSupervisor
   require Logger
   alias EvercamMedia.Snapmail.Snapmailer
 
   def start_link() do
-    Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+    DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def init(:ok) do
     Task.start_link(&initiate_workers/0)
-    children = [worker(Snapmailer, [], restart: :permanent)]
-    supervise(children, strategy: :simple_one_for_one, max_restarts: 1_000_000)
+    DynamicSupervisor.init(strategy: :one_for_one, max_restarts: 1_000_000)
   end
 
   @doc """
@@ -25,7 +24,8 @@ defmodule EvercamMedia.Snapmail.SnapmailerSupervisor do
     case get_config(snapmail) do
       {:ok, settings} ->
         Logger.debug "[#{settings.name}] Starting snapmail worker"
-        Supervisor.start_child(__MODULE__, [settings])
+        spec = %{id: Snapmailer, start: {Snapmailer, :start_link, [settings]}}
+        DynamicSupervisor.start_child(__MODULE__, spec)
       {:error, _message, url} ->
         Logger.warn "[#{snapmail.exid}] Skipping snapmail worker as the host is invalid: #{url}"
     end
@@ -47,7 +47,7 @@ defmodule EvercamMedia.Snapmail.SnapmailerSupervisor do
 
   def delete_worker(nil), do: :noop
   def delete_worker(worker_pid) do
-    Supervisor.terminate_child(__MODULE__, worker_pid)
+    DynamicSupervisor.terminate_child(__MODULE__, worker_pid)
   end
 
   @doc """

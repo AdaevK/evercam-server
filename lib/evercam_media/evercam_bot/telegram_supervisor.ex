@@ -16,15 +16,27 @@ defmodule EvercamMedia.EvercamBot.TelegramSupervisor do
       true ->
         Task.start_link(&start_matcher/0)
         children = [
-          worker(EvercamMedia.EvercamBot.Poller, [], restart: :permanent),
-          worker(EvercamMedia.EvercamBot.Matcher, [], restart: :permanent)
+          %{
+            id: EvercamMedia.EvercamBot.Poller,
+            start: {EvercamMedia.EvercamBot.Poller, :start_link, []},
+            restart: :permanent
+          },
+          %{
+            id: EvercamMedia.EvercamBot.Matcher,
+            start: {EvercamMedia.EvercamBot.Matcher, :start_link, []},
+            restart: :permanent
+          }
         ]
-        supervise(children, strategy: :one_for_one, max_restarts: 1_000_000)
+        Supervisor.init(children, strategy: :one_for_one, max_restarts: 1_000_000)
       false ->
         children = [
-          worker(EvercamMedia.EvercamBot.Matcher, [], restart: :permanent)
+          %{
+            id: EvercamMedia.EvercamBot.Matcher,
+            start: {EvercamMedia.EvercamBot.Matcher, :start_link, []},
+            restart: :permanent
+          }
         ]
-        supervise(children, strategy: :one_for_one, max_restarts: 1_000_000)
+        Supervisor.init(children, strategy: :one_for_one, max_restarts: 1_000_000)
     end
   end
 

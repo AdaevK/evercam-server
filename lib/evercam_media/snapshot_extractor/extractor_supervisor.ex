@@ -2,25 +2,17 @@ defmodule EvercamMedia.SnapshotExtractor.ExtractorSupervisor do
 
   use Supervisor
   require Logger
-  alias EvercamMedia.SnapshotExtractor.Extractor
-  alias EvercamMedia.SnapshotExtractor.CloudExtractor
-  alias EvercamMedia.SnapshotExtractor.TimelapseCreator
   import Commons
 
   @root_dir Application.get_env(:evercam_media, :storage_dir)
 
   def start_link() do
-    Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+    DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def init(:ok) do
     Task.start_link(&initiate_workers/0)
-    extractor_children = [worker(Extractor, [], restart: :permanent)]
-    supervise(extractor_children, strategy: :simple_one_for_one, max_restarts: 1_000_000)
-    cloud_extractor_childern = [worker(CloudExtractor, [], restart: :permanent)]
-    supervise(cloud_extractor_childern, strategy: :simple_one_for_one, max_restarts: 1_000_000)
-    timelapse_children = [worker(TimelaspeCreator, [], restart: :permanent)]
-    supervise(timelapse_children, strategy: :simple_one_for_one, max_restarts: 1_000_000)
+    DynamicSupervisor.init(strategy: :one_for_one, max_restarts: 1_000_000)
   end
 
   def initiate_workers do
