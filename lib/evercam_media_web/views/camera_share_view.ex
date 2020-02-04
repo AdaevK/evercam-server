@@ -51,6 +51,7 @@ defmodule EvercamMediaWeb.CameraShareView do
       sharer_email: Util.deep_get(camera_share, [:sharer, :email], ""),
       user_id: Util.deep_get(camera_share, [:user, :username], ""),
       rights: Util.camera_share_get_rights(camera_share.kind, camera_share.user, camera_share.camera),
+      created_at: Util.datetime_to_iso8601(camera_share.created_at, Camera.get_timezone(camera_share.camera))
     }
   end
 
