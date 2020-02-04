@@ -26,7 +26,6 @@ defmodule EvercamMedia.SyncEvercamToZoho do
             {:nodata, _message} -> [camera | sync_missing_cameras]
             _ -> sync_missing_cameras
           end
-          # :timer.sleep(1000)
         end)
 
       sync_cameras
@@ -36,6 +35,37 @@ defmodule EvercamMedia.SyncEvercamToZoho do
       sync_cameras
       |> Zoho.insert_camera
       |> IO.inspect
+    end)
+
+    Logger.info "Camera(s) sync successfully."
+  end
+
+  def sync_camera_shared_contact(email_or_username) do
+    {:ok, _} = Application.ensure_all_started(:evercam_media)
+
+    Logger.info "Start sync construction cameras shared contact to zoho."
+
+    email_or_username
+    |> User.by_username_or_email
+    |> Camera.for(false)
+    |> Enum.each(fn(camera) ->
+      CameraShare.camera_shares(camera)
+      |> Enum.each(fn(share) ->
+        Logger.info "#{share.user.email}"
+        case Zoho.get_contact(share.user.email) do
+          {:ok, _} -> Logger.info "Contact '#{share.user.email}' already exists in zoho."
+          {:nodata, _} ->
+            Logger.info "Insert contact '#{share.user.email}' to zoho."
+            case Zoho.insert_contact(share.user) do
+              {:ok, contact} ->
+                {:ok, c} = Zoho.get_camera(share.camera.exid)
+                Zoho.associate_camera_contact(contact, c)
+              _ -> Logger.info "Failed to insert contact"
+            end
+            :timer.sleep(2000)
+          {:error, _} -> Logger.error "Error to insert"
+        end
+      end)
     end)
 
     Logger.info "Camera(s) sync successfully."
