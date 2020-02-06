@@ -32,8 +32,12 @@ defmodule EvercamMedia.Snapshot.StreamerSupervisor do
   Stop streamer process
   """
   def stop_streamer(camera_exid) do
-    streamer_id = String.to_atom("#{camera_exid}_streamer")
-    DynamicSupervisor.terminate_child(__MODULE__, Process.whereis(streamer_id))
+    String.to_atom("#{camera_exid}_streamer")
+    |> Process.whereis()
+    |> case do
+      nil -> Logger.debug "[#{camera_exid}] Skipping streamer ..."
+      pid -> DynamicSupervisor.terminate_child(__MODULE__, pid)
+    end
   end
 
   @doc """
