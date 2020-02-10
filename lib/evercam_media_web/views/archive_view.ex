@@ -76,7 +76,7 @@ defmodule EvercamMediaWeb.ArchiveView do
       from_date: Util.date_wrt_version(version, timelapse.from_datetime, timelapse.camera),
       to_date: Util.date_wrt_version(version, timelapse.to_datetime, timelapse.camera),
       created_at: Util.date_wrt_version(version, timelapse.inserted_at, timelapse.camera),
-      status: timelapse.status,
+      status: timelapse_status(timelapse.status),
       requested_by: Util.deep_get(timelapse, [:user, :username], ""),
       requester_name: User.get_fullname(timelapse.user),
       requester_email: Util.deep_get(timelapse, [:user, :email], ""),
@@ -98,6 +98,15 @@ defmodule EvercamMediaWeb.ArchiveView do
   defp status(1), do: "Processing"
   defp status(2), do: "Completed"
   defp status(3), do: "Failed"
+
+  defp timelapse_status(11), do: "Pending"
+  defp timelapse_status(6), do: "Processing"
+  defp timelapse_status(5), do: "Completed"
+  defp timelapse_status(7), do: "Failed"
+  defp timelapse_status(8), do: "Creating"
+  defp timelapse_status(9), do: "Extracting"
+  defp timelapse_status(10), do: "Uploading"
+  defp timelapse_status(_), do: "No Data"
 
   defp compare_status(0), do: "Processing"
   defp compare_status(1), do: "Completed"
